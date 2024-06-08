@@ -2,7 +2,6 @@ import { BadRequestException, Inject, Injectable, NotFoundException } from '@nes
 import { Connection, EntityManager } from 'typeorm';
 import { Cart } from './cart.entity';
 import { Product } from '../product/product.entity';
-import { ProductService } from '../product/product.service';
 import { CartRepository } from './cart.repository';
 import { UserService } from '../user/user.service';
 import { User } from '../user/user.entity';
@@ -13,7 +12,6 @@ export class CartService {
 	constructor(
 		@Inject('CartRepository')
 		private _cartRepository: CartRepository,
-		private readonly _productService: ProductService,
 		private readonly _userService: UserService,
 		private readonly _connection: Connection,
 	) { }

@@ -1,6 +1,5 @@
-import { Entity, Column, BeforeInsert, ManyToMany, PrimaryGeneratedColumn, PrimaryColumn } from 'typeorm';
-import { IsString, IsNotEmpty, IsNumber, IsPositive, IsInt, IsDate, Length } from 'class-validator';
-import { v4 as uuidv4 } from 'uuid';
+import { Entity, Column, ManyToMany, PrimaryGeneratedColumn, PrimaryColumn } from 'typeorm';
+import { IsString, IsNotEmpty, IsNumber, IsPositive, IsInt, IsDate } from 'class-validator';
 import { Cart } from '../cart/cart.entity';
 
 @Entity()

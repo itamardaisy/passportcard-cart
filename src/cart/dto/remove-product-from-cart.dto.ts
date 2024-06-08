@@ -1,4 +1,4 @@
-import { IsUUID, IsInt, Min } from 'class-validator';
+import { IsUUID, IsInt, IsPositive } from 'class-validator';
 
 export class RemoveProductFromCartDto {
 	@IsInt()
@@ -8,6 +8,6 @@ export class RemoveProductFromCartDto {
 	productId: string;
 
 	@IsInt()
-	@Min(1)
+	@IsPositive()
 	quantity: number;
 }

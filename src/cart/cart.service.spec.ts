@@ -1,6 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { CartService } from './cart.service';
-import { CartRepository } from './cart.repository';
 import { ProductService } from '../product/product.service';
 import { UserService } from '../user/user.service';
 import { Connection, EntityManager } from 'typeorm';

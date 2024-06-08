@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Param, Delete, Put, HttpCode, HttpStatus, Query } from '@nestjs/common';
+import { Controller, Get, Body, Delete, Put, HttpCode, HttpStatus, Query } from '@nestjs/common';
 import { CartService } from './cart.service';
 import { Cart } from './cart.entity';
 import { AddProductToCartDto } from './dto/add-product-to-cart.dto';

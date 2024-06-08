@@ -1,4 +1,4 @@
-import { IsUUID, IsInt, Min, isInt } from 'class-validator';
+import { IsUUID, IsInt, IsPositive } from 'class-validator';
 
 export class UpdateProductQuantityDto {
 	@IsInt()
@@ -8,6 +8,6 @@ export class UpdateProductQuantityDto {
 	productId: string;
 
 	@IsInt()
-	@Min(1)
+	@IsPositive()
 	quantity: number;
 }

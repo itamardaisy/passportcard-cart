@@ -1,9 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { ProductService } from './product.service';
-import { ProductRepository } from './product.repository';
 import { Product } from './product.entity';
 import { CreateProductDto } from './dto/create-product.dto';
-import { validate } from 'class-validator';
 import { plainToClass } from 'class-transformer';
 
 const mockProductRepository = () => ({

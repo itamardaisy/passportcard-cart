@@ -1,4 +1,3 @@
-// src/cart/dto/add-product-to-cart.dto.ts
 import { IsInt, IsUUID, Min } from 'class-validator';
 
 export class AddProductToCartDto {
