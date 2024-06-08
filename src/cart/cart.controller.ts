@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Param, Delete, Put, HttpCode, HttpStatus } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Delete, Put, HttpCode, HttpStatus, Query } from '@nestjs/common';
 import { CartService } from './cart.service';
 import { Cart } from './cart.entity';
 import { AddProductToCartDto } from './dto/add-product-to-cart.dto';
@@ -32,9 +32,9 @@ export class CartController {
 		return this.cartService.updateProductQuantity(userId, productId, quantity);
 	}
 
-	@Get(':userId/view')
+	@Get('view')
 	@HttpCode(HttpStatus.OK)
-	async getCartView(@Param('userId') userId: number): Promise<ViewProductObjectDto[]> {
+	async getCartView(@Query('userId') userId: number): Promise<ViewProductObjectDto[]> {
 		return this.cartService.getCartView(userId);
 	}
 }
