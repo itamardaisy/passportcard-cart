@@ -70,8 +70,8 @@ A Postman collection has been created for testing the API endpoints. Import the 
 ```JSON
 {
   "info": {
-    "name": "Cart and Product Management API",
-    "description": "Postman collection for Cart and Product Management API",
+    "name": "Cart Management API",
+    "description": "Postman collection for Cart Management API",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "item": [
