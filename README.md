@@ -11,8 +11,8 @@ This project is a RESTful API built with NestJS and TypeORM for managing carts a
 1. Clone the repository:
 
 ```bash
-git clone <repository-url>
-cd <repository-directory>
+git clone **https://github.com/itamardaisy/passportcard-cart.git**
+cd path-to-your-directory/passportcard-cart
 ```
 
 2. Install dependencies:
