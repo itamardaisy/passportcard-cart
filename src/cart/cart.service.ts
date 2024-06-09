@@ -156,6 +156,9 @@ export class CartService {
 
 			product.stockQuantity += cartToProduct.quantity;
 
+			// Remove the cartToProduct from the cart's cartToProducts array
+			cart.cartToProducts = cart.cartToProducts.filter(ctp => ctp.id !== cartToProduct.id);
+
 			await manager.remove(cartToProduct);
 			await manager.save(product);
 			await manager.save(cart);
