@@ -57,9 +57,7 @@ export class CartService {
 			}
 
 			product.stockQuantity -= quantity;
-			await manager.save(product);
-			await manager.save(cartToProduct);
-			await manager.save(cart);
+			await manager.save([product, cartToProduct, cart]);
 
 			return this.toCartDto(cart);
 		});
@@ -73,7 +71,6 @@ export class CartService {
 			if (!cart) {
 				throw new NotFoundException('Cart not found');
 			}
-
 			if (!product) {
 				throw new NotFoundException('Product not found');
 			}
@@ -101,6 +98,7 @@ export class CartService {
 			}
 
 			await manager.save(product);
+
 			if (cartToProduct.quantity === 0) {
 				cart.cartToProducts = cart.cartToProducts.filter(x => x.product.id !== productId); // Remove the product from the cart.
 				await manager.remove(cartToProduct);
@@ -110,7 +108,6 @@ export class CartService {
 			}
 
 			await manager.save(cart);
-
 
 			return this.toCartDto(cart);
 		});

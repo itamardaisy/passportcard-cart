@@ -4,7 +4,7 @@ import { Product } from './product.entity';
 import { validate } from 'class-validator';
 import { CreateProductDto } from './dto/create-product.dto';
 
-const PAGENATION_LIMIT = 100;
+const PAGINATION_LIMIT = 100;
 
 @Injectable()
 export class ProductService {
@@ -14,18 +14,22 @@ export class ProductService {
 	) { }
 
 	async findAll(page: number): Promise<{ data: Product[], count: number, totalPages: number }> {
+		if (page < 1) {
+			throw new Error('Page number must be greater than 0');
+		}
+
 		const [data, count] = await this.productRepository.findAndCount({
-			skip: (page - 1) * PAGENATION_LIMIT,
-			take: PAGENATION_LIMIT,
+			skip: (page - 1) * PAGINATION_LIMIT,
+			take: PAGINATION_LIMIT,
 		});
-		const totalPages = Math.ceil(count / PAGENATION_LIMIT);
+		const totalPages = Math.ceil(count / PAGINATION_LIMIT);
 		return { data, count, totalPages };
 	}
 
 	async getProductById(id: string): Promise<Product> {
 		const product = await this.productRepository.findOne({ where: { id } });
 		if (!product) {
-			throw new NotFoundException('Product not exists');
+			throw new NotFoundException('Product not found');
 		}
 		return product;
 	}
