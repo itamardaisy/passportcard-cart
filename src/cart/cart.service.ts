@@ -102,35 +102,38 @@ export class CartService {
 
 			await manager.save(product);
 			if (cartToProduct.quantity === 0) {
+				cart.cartToProducts = cart.cartToProducts.filter(x => x.product.id !== productId); // Remove the product from the cart.
 				await manager.remove(cartToProduct);
 			} else {
+				cart.cartToProducts.find(x => x.product.id === productId).quantity = newQuantity;  // Update the cart product quantity.
 				await manager.save(cartToProduct);
 			}
 
 			await manager.save(cart);
+
 
 			return this.toCartDto(cart);
 		});
 	}
 
 	public async getCartView(userId: number): Promise<ViewProductObjectDto[]> {
-		const cart = await this._cartRepository.findOne({ where: { userId }, relations: ['cartToProducts'] });
+		const cart = await this._cartRepository
+			.createQueryBuilder('cart')
+			.leftJoinAndSelect('cart.cartToProducts', 'cartToProduct')
+			.leftJoinAndSelect('cartToProduct.product', 'product')
+			.where('cart.userId = :userId', { userId })
+			.getOne();
 
 		if (!cart) {
 			throw new NotFoundException('Cart not found');
 		}
 
-		const productMap = new Map<string, ViewProductObjectDto>();
-
-		for (const cartToProduct of cart.cartToProducts) {
-			if (productMap.has(cartToProduct.product.id)) {
-				productMap.get(cartToProduct.product.id)!.quantity += 1;
-			} else {
-				productMap.set(cartToProduct.product.id, { productName: cartToProduct.product.name, quantity: 1 });
-			}
-		}
-
-		return Array.from(productMap.values());
+		return cart.cartToProducts.map(cartToProduct => {
+			return {
+				productName: cartToProduct.product.name,
+				quantity: cartToProduct.quantity
+			};
+		});
 	}
 
 	public async removeProductFromCart(userId: number, productId: string): Promise<CartDto> {
@@ -210,7 +213,6 @@ export class CartService {
 
 		return cartToProduct;
 	}
-
 
 	private async findOrCreateCart(userId: number, manager: EntityManager): Promise<Cart> {
 		const cart = await manager
