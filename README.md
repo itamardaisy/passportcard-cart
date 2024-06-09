@@ -41,26 +41,27 @@ INSERT INTO user (name, email) VALUES ('Jake White', 'jake@example.com');
 INSERT INTO user (name, email) VALUES ('Jill Green', 'jill@example.com');
 
 -- Create Products
-INSERT INTO product (id, name, price, stockQuantity, expirationDate) VALUES ('uuid1', 'Product 1', 10.99, 100, '2025-12-31');
-INSERT INTO product (id, name, price, stockQuantity, expirationDate) VALUES ('uuid2', 'Product 2', 20.99, 50, '2025-12-31');
-INSERT INTO product (id, name, price, stockQuantity, expirationDate) VALUES ('uuid3', 'Product 3', 30.99, 75, '2025-12-31');
-INSERT INTO product (id, name, price, stockQuantity, expirationDate) VALUES ('uuid4', 'Product 4', 40.99, 200, '2025-12-31');
-INSERT INTO product (id, name, price, stockQuantity, expirationDate) VALUES ('uuid5', 'Product 5', 50.99, 150, '2025-12-31');
-INSERT INTO product (id, name, price, stockQuantity, expirationDate) VALUES ('uuid6', 'Product 6', 60.99, 300, '2025-12-31');
-INSERT INTO product (id, name, price, stockQuantity, expirationDate) VALUES ('uuid7', 'Product 7', 70.99, 10, '2025-12-31');
-INSERT INTO product (id, name, price, stockQuantity, expirationDate) VALUES ('uuid8', 'Product 8', 80.99, 5, '2025-12-31');
-INSERT INTO product (id, name, price, stockQuantity, expirationDate) VALUES ('uuid9', 'Product 9', 90.99, 25, '2025-12-31');
-INSERT INTO product (id, name, price, stockQuantity, expirationDate) VALUES ('uuid10', 'Product 10', 100.99, 35, '2025-12-31');
-INSERT INTO product (id, name, price, stockQuantity, expirationDate) VALUES ('uuid11', 'Product 11', 110.99, 45, '2025-12-31');
-INSERT INTO product (id, name, price, stockQuantity, expirationDate) VALUES ('uuid12', 'Product 12', 120.99, 55, '2025-12-31');
-INSERT INTO product (id, name, price, stockQuantity, expirationDate) VALUES ('uuid13', 'Product 13', 130.99, 65, '2025-12-31');
-INSERT INTO product (id, name, price, stockQuantity, expirationDate) VALUES ('uuid14', 'Product 14', 140.99, 75, '2025-12-31');
-INSERT INTO product (id, name, price, stockQuantity, expirationDate) VALUES ('uuid15', 'Product 15', 150.99, 85, '2025-12-31');
-INSERT INTO product (id, name, price, stockQuantity, expirationDate) VALUES ('uuid16', 'Product 16', 160.99, 95, '2025-12-31');
-INSERT INTO product (id, name, price, stockQuantity, expirationDate) VALUES ('uuid17', 'Product 17', 170.99, 105, '2025-12-31');
-INSERT INTO product (id, name, price, stockQuantity, expirationDate) VALUES ('uuid18', 'Product 18', 180.99, 115, '2025-12-31');
-INSERT INTO product (id, name, price, stockQuantity, expirationDate) VALUES ('uuid19', 'Product 19', 190.99, 125, '2025-12-31');
-INSERT INTO product (id, name, price, stockQuantity, expirationDate) VALUES ('uuid20', 'Product 20', 200.99, 135, '2025-12-31');
+INSERT INTO product (id, name, price, stockQuantity, expirationDate) VALUES
+(UUID(), 'Product 1', 10.99, 100, '2025-12-31'),
+(UUID(), 'Product 2', 15.49, 50, '2025-11-30'),
+(UUID(), 'Product 3', 20.00, 200, '2025-10-31'),
+(UUID(), 'Product 4', 5.99, 150, '2025-09-30'),
+(UUID(), 'Product 5', 25.00, 75, '2025-08-31'),
+(UUID(), 'Product 6', 12.50, 60, '2025-07-31'),
+(UUID(), 'Product 7', 7.25, 120, '2025-06-30'),
+(UUID(), 'Product 8', 9.99, 110, '2025-05-31'),
+(UUID(), 'Product 9', 30.00, 90, '2025-04-30'),
+(UUID(), 'Product 10', 50.00, 80, '2025-03-31'),
+(UUID(), 'Product 11', 22.00, 130, '2025-02-28'),
+(UUID(), 'Product 12', 18.75, 140, '2025-01-31'),
+(UUID(), 'Product 13', 60.00, 160, '2024-12-31'),
+(UUID(), 'Product 14', 45.00, 70, '2024-11-30'),
+(UUID(), 'Product 15', 35.00, 55, '2024-10-31'),
+(UUID(), 'Product 16', 40.00, 65, '2024-09-30'),
+(UUID(), 'Product 17', 55.00, 85, '2024-08-31'),
+(UUID(), 'Product 18', 65.00, 95, '2024-07-31'),
+(UUID(), 'Product 19', 70.00, 105, '2024-06-30'),
+(UUID(), 'Product 20', 75.00, 115, '2024-05-31');
 ```
 
 
@@ -142,7 +143,7 @@ A Postman collection has been created for testing the API endpoints. Import the 
         ],
         "body": {
           "mode": "raw",
-          "raw": "{\n  \"userId\": 1,\n  \"productId\": \"uuid12\",\n  \"quantity\": 2\n}"
+          "raw": "{\n  \"userId\": 1,\n  \"productId\": \"COPY-CREATED-PRODUCT-ID\",\n  \"quantity\": 2\n}"
         },
         "url": {
           "raw": "http://localhost:3000/cart/add-product",
@@ -172,7 +173,7 @@ A Postman collection has been created for testing the API endpoints. Import the 
         ],
         "body": {
           "mode": "raw",
-          "raw": "{\n  \"userId\": 1,\n  \"productId\": \"uuid4\",\n  \"quantity\": 1\n}"
+          "raw": "{\n  \"userId\": 1,\n  \"productId\": \"COPY-CREATED-PRODUCT-ID\",\n  \"quantity\": 1\n}"
         },
         "url": {
           "raw": "http://localhost:3000/cart/remove-product",
@@ -202,7 +203,7 @@ A Postman collection has been created for testing the API endpoints. Import the 
         ],
         "body": {
           "mode": "raw",
-          "raw": "{\n  \"userId\": 1,\n  \"productId\": \"uuid11\",\n  \"quantity\": 3\n}"
+          "raw": "{\n  \"userId\": 1,\n  \"productId\": \"COPY-CREATED-PRODUCT-ID\",\n  \"quantity\": 3\n}"
         },
         "url": {
           "raw": "http://localhost:3000/cart/update-product-quantity",
@@ -254,5 +255,6 @@ A Postman collection has been created for testing the API endpoints. Import the 
     2. Click on the "Import" button.
     3. Select "Raw text" and paste the above JSON.
     4. Click "Continue" and then "Import".
+    5. Notice in some request you need to replace the COPY-CREATED-PRODUCT-ID with an existing product from your database.
 
 You should now see the collection with the requests for creating products, retrieving products, adding products to the cart, removing products from the cart, updating product quantities in the cart, and viewing the cart.
