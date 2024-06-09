@@ -3,33 +3,36 @@ import { Connection, EntityManager } from 'typeorm';
 import { Cart } from './cart.entity';
 import { Product } from '../product/product.entity';
 import { CartRepository } from './cart.repository';
-import { UserService } from '../user/user.service';
 import { User } from '../user/user.entity';
 import { ViewProductObjectDto } from './dto/view-product-object.dto';
+import { CartToProduct } from './cart-product.entity';
+import { CartDto } from './dto/cart.dto';
+import { CartItemDto } from './dto/cart-item.dto';
+import { ProductDto } from '../product/dto/product.dto';
 
 @Injectable()
 export class CartService {
 	constructor(
 		@Inject('CartRepository')
 		private _cartRepository: CartRepository,
-		private readonly _userService: UserService,
 		private readonly _connection: Connection,
 	) { }
 
 	public async createCart(userId: number, manager: EntityManager): Promise<Cart> {
-		const user = await this._userService.findOne(userId);
+		const user = await manager.findOne(User, { where: { id: userId } });
 
 		this.validateCartCreationForUser(user);
 
 		const cart = new Cart();
 		cart.user = user;
 		cart.userId = userId;
+		cart.cartToProducts = [];
 		manager.save(cart);
 
 		return cart;
 	}
 
-	public async addProductToCart(userId: number, productId: string, quantity: number): Promise<Cart> {
+	public async addProductToCart(userId: number, productId: string, quantity: number): Promise<CartDto> {
 		return this._connection.transaction(async (manager: EntityManager) => {
 			const cart = await this.findOrCreateCart(userId, manager);
 			const product = await manager.findOne(Product, { where: { id: productId } });
@@ -38,25 +41,33 @@ export class CartService {
 				throw new NotFoundException('Product not found');
 			}
 
-			this.validateAdditionToCart(cart, product, quantity);
+			if (product.stockQuantity < quantity) {
+				throw new BadRequestException('Not enough stock for the product');
+			}
 
-			// Decrement the stock quantity
+			let cartToProduct = await manager.findOne(CartToProduct, { where: { cart, product } });
+			if (cartToProduct) {
+				cartToProduct.quantity += quantity;
+			} else {
+				cartToProduct = new CartToProduct();
+				cartToProduct.cart = cart;
+				cartToProduct.product = product;
+				cartToProduct.quantity = quantity;
+				cart.cartToProducts.push(cartToProduct);
+			}
+
 			product.stockQuantity -= quantity;
 			await manager.save(product);
-
-			// Add the product to the cart
-			for (let i = 0; i < quantity; i++) {
-				cart.products.push(product);
-			}
+			await manager.save(cartToProduct);
 			await manager.save(cart);
 
-			return cart;
+			return this.toCartDto(cart);
 		});
 	}
 
-	public async updateProductQuantity(cartId: string, productId: string, newQuantity: number): Promise<Cart> {
+	public async updateProductQuantity(userId: number, productId: string, newQuantity: number): Promise<CartDto> {
 		return this._connection.transaction(async (manager: EntityManager) => {
-			const cart = await manager.findOne(Cart, { where: { id: cartId }, relations: ['products'] });
+			const cart = await this.getUserCart(userId, manager);
 			const product = await manager.findOne(Product, { where: { id: productId } });
 
 			if (!cart) {
@@ -67,7 +78,13 @@ export class CartService {
 				throw new NotFoundException('Product not found');
 			}
 
-			const currentQuantity = cart.products.filter(p => p.id === productId).length;
+			const cartToProduct = await this.findCartToProduct(cart.id, product.id, manager);
+
+			if (!cartToProduct) {
+				throw new BadRequestException('Product not found in the cart');
+			}
+
+			const currentQuantity = cartToProduct.quantity;
 
 			if (newQuantity > currentQuantity) {
 				const additionalQuantity = newQuantity - currentQuantity;
@@ -76,29 +93,28 @@ export class CartService {
 				}
 
 				product.stockQuantity -= additionalQuantity;
-				for (let i = 0; i < additionalQuantity; i++) {
-					cart.products.push(product);
-				}
+				cartToProduct.quantity = newQuantity;
 			} else if (newQuantity < currentQuantity) {
 				const reduceQuantity = currentQuantity - newQuantity;
 				product.stockQuantity += reduceQuantity;
-				for (let i = 0; i < reduceQuantity; i++) {
-					const index = cart.products.findIndex(p => p.id === productId);
-					if (index !== -1) {
-						cart.products.splice(index, 1);
-					}
-				}
+				cartToProduct.quantity = newQuantity;
 			}
 
 			await manager.save(product);
+			if (cartToProduct.quantity === 0) {
+				await manager.remove(cartToProduct);
+			} else {
+				await manager.save(cartToProduct);
+			}
+
 			await manager.save(cart);
 
-			return cart;
+			return this.toCartDto(cart);
 		});
 	}
 
 	public async getCartView(userId: number): Promise<ViewProductObjectDto[]> {
-		const cart = await this._cartRepository.findOne({ where: { userId }, relations: ['products'] });
+		const cart = await this._cartRepository.findOne({ where: { userId }, relations: ['cartToProducts'] });
 
 		if (!cart) {
 			throw new NotFoundException('Cart not found');
@@ -106,70 +122,105 @@ export class CartService {
 
 		const productMap = new Map<string, ViewProductObjectDto>();
 
-		for (const product of cart.products) {
-			if (productMap.has(product.id)) {
-				productMap.get(product.id)!.quantity += 1;
+		for (const cartToProduct of cart.cartToProducts) {
+			if (productMap.has(cartToProduct.product.id)) {
+				productMap.get(cartToProduct.product.id)!.quantity += 1;
 			} else {
-				productMap.set(product.id, { productName: product.name, quantity: 1 });
+				productMap.set(cartToProduct.product.id, { productName: cartToProduct.product.name, quantity: 1 });
 			}
 		}
 
 		return Array.from(productMap.values());
 	}
 
-	public async removeProductFromCart(userId: number, productId: string, quantity: number): Promise<Cart> {
+	public async removeProductFromCart(userId: number, productId: string): Promise<CartDto> {
 		return this._connection.transaction(async (manager: EntityManager) => {
-			const cart = await manager.findOne(Cart, { where: { userId }, relations: ['products'] });
+			const cart = await this.getUserCart(userId, manager);
 			const product = await manager.findOne(Product, { where: { id: productId } });
+
 			if (!cart) {
-				throw new NotFoundException('User Has no cart');
+				throw new NotFoundException('User has no cart');
 			}
 
 			if (!product) {
 				throw new NotFoundException('Product not found');
 			}
 
-			this.validateRemoveProductFromCart(cart, product, quantity);
-
-			// Increment the stock quantity
-			product.stockQuantity += quantity;
-			await manager.save(product);
-
-			// Remove the product from the cart
-			for (let i = 0; i < quantity; i++) {
-				const index = cart.products.findIndex(p => p.id === productId);
-				if (index !== -1) {
-					cart.products.splice(index, 1);
-				}
+			const cartToProduct = await manager.findOne(CartToProduct, { where: { cart, product } });
+			if (!cartToProduct) {
+				throw new BadRequestException('Product not found in the cart');
 			}
+
+			product.stockQuantity += cartToProduct.quantity;
+
+			await manager.remove(cartToProduct);
+			await manager.save(product);
 			await manager.save(cart);
 
-			return cart;
+			return this.toCartDto(cart);
 		});
 	}
 
+	private toCartDto(cart: Cart): CartDto {
+		const cartDto = new CartDto();
+		cartDto.id = cart.id;
+		cartDto.content = [];
+
+		if (cart.cartToProducts.length > 0) {
+			for (const cartToProduct of cart.cartToProducts) {
+				const cartItemDto = new CartItemDto();
+				cartItemDto.product = new ProductDto();
+				cartItemDto.product.productId = cartToProduct.product.id;
+				cartItemDto.product.price = cartToProduct.product.price;
+				cartItemDto.product.productName = cartToProduct.product.name;
+				cartItemDto.quantity = cartToProduct.quantity;
+				cartDto.content.push(cartItemDto);
+			}
+		}
+
+		return cartDto;
+	}
+
+	private async getUserCart(userId: number, manager: EntityManager): Promise<Cart> {
+		const cart = await manager
+			.getRepository(Cart)
+			.createQueryBuilder('cart')
+			.leftJoinAndSelect('cart.cartToProducts', 'cartToProduct')
+			.leftJoinAndSelect('cartToProduct.product', 'product')
+			.where('cart.userId = :userId', { userId })
+			.getOne();
+		if (!cart) {
+			throw new Error('User have no cart');
+		}
+		return cart;
+	}
+
+	private async findCartToProduct(cartId: number, productId: string, manager: EntityManager): Promise<CartToProduct> {
+		const cartToProduct = await manager
+			.getRepository(CartToProduct)
+			.createQueryBuilder('cart_to_product')
+			.leftJoinAndSelect('cart_to_product.product', 'product')
+			.leftJoinAndSelect('cart_to_product.cart', 'cart')
+			.where('cart_to_product.cartId = :cartId AND cart_to_product.productId = :productId', { cartId, productId })
+			.getOne();
+
+		if (!cartToProduct) {
+			throw new Error('CartToProduct element not found');
+		}
+
+		return cartToProduct;
+	}
+
+
 	private async findOrCreateCart(userId: number, manager: EntityManager): Promise<Cart> {
-		const cart = await manager.findOne(Cart, { where: { userId } });
+		const cart = await manager
+			.getRepository(Cart)
+			.createQueryBuilder('cart')
+			.leftJoinAndSelect('cart.cartToProducts', 'cartToProduct')
+			.leftJoinAndSelect('cartToProduct.product', 'product')
+			.where('cart.userId = :userId', { userId })
+			.getOne();
 		return !cart ? this.createCart(userId, manager) : cart;
-	}
-
-	private validateRemoveProductFromCart(cart: Cart, product: Product, quantity: number): void {
-		const productIndex = cart.products.findIndex(p => p.id === product.id);
-		if (productIndex === -1) {
-			throw new BadRequestException('Product not found in the cart');
-		}
-
-		// Ensure there are enough products in the cart to remove
-		const productCountInCart = cart.products.filter(p => p.id === product.id).length;
-		if (productCountInCart < quantity) {
-			throw new BadRequestException('Not enough products in the cart to remove');
-		}
-	}
-
-	private validateAdditionToCart(cart: Cart, product: Product, quantity: number): void {
-		if (product.stockQuantity < quantity) {
-			throw new BadRequestException('Not enough stock for the product');
-		}
 	}
 
 	private validateCartCreationForUser(user: User): void {

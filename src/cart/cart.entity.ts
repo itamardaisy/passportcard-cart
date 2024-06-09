@@ -1,20 +1,23 @@
+import { Entity, PrimaryGeneratedColumn, ManyToMany, JoinTable, OneToOne, JoinColumn, Column, OneToMany } from 'typeorm';
 import { Product } from '../product/product.entity';
 import { User } from '../user/user.entity';
-import { Entity, PrimaryGeneratedColumn, ManyToMany, JoinTable, OneToOne, JoinColumn, Column } from 'typeorm';
+import { CartToProduct } from './cart-product.entity';
+import { Type } from 'class-transformer';
+import { IsNotEmpty } from 'class-validator';
 
 @Entity()
 export class Cart {
 	@PrimaryGeneratedColumn()
-	id: string;
+	id: number;
 
-	@ManyToMany(() => Product, (product: Product) => product.carts)
-	@JoinTable({ name: 'carts_to_products' })
-	products: Product[];
+	@OneToMany(() => CartToProduct, cartToProduct => cartToProduct.cart)
+	cartToProducts: CartToProduct[];
 
-	@OneToOne(() => User, (user: User) => user.cart)
+	@OneToOne(() => User, user => user.cart)
 	@JoinColumn({ name: 'userId' })
 	user: User;
 
 	@Column()
+	@IsNotEmpty()
 	userId: number;
 }

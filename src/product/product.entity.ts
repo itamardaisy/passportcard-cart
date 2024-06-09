@@ -1,11 +1,12 @@
-import { Entity, Column, ManyToMany, PrimaryGeneratedColumn, PrimaryColumn } from 'typeorm';
+import { Entity, Column, ManyToMany, PrimaryGeneratedColumn, PrimaryColumn, OneToMany } from 'typeorm';
 import { IsString, IsNotEmpty, IsNumber, IsPositive, IsInt, IsDate } from 'class-validator';
 import { Cart } from '../cart/cart.entity';
+import { CartToProduct } from '../cart/cart-product.entity';
+import { Exclude } from 'class-transformer';
 
 @Entity()
 export class Product {
 	@PrimaryGeneratedColumn('uuid')
-	@PrimaryColumn({ type: 'varchar', length: 50 })
 	id: string;
 
 	@Column()
@@ -27,6 +28,6 @@ export class Product {
 	@IsDate()
 	expirationDate: Date;
 
-	@ManyToMany(() => Cart, (cart: Cart) => cart.products)
-	carts: Cart[];
+	@OneToMany(() => CartToProduct, cartToProduct => cartToProduct.product)
+	cartToProducts: CartToProduct[];
 }

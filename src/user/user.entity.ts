@@ -1,3 +1,4 @@
+import { Type } from 'class-transformer';
 import { Cart } from '../cart/cart.entity';
 import { Entity, Column, PrimaryGeneratedColumn, OneToOne } from 'typeorm';
 
@@ -12,6 +13,6 @@ export class User {
 	@Column()
 	email: string;
 
-	@OneToOne(() => Cart, (cart: Cart) => cart.user)
+	@OneToOne(() => Cart, cart => cart.user)
 	cart: Cart;
 }

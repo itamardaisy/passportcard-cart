@@ -5,6 +5,7 @@ import { AddProductToCartDto } from './dto/add-product-to-cart.dto';
 import { RemoveProductFromCartDto } from './dto/remove-product-from-cart.dto';
 import { UpdateProductQuantityDto } from './dto/update-product-quantity.dto';
 import { ViewProductObjectDto } from './dto/view-product-object.dto';
+import { CartDto } from './dto/cart.dto';
 
 @Controller('cart')
 export class CartController {
@@ -13,21 +14,21 @@ export class CartController {
 
 	@Put('add-product')
 	@HttpCode(HttpStatus.OK)
-	async addProduct(@Body() addProductToCartDto: AddProductToCartDto): Promise<Cart> {
+	async addProduct(@Body() addProductToCartDto: AddProductToCartDto): Promise<CartDto> {
 		const { userId, productId, quantity } = addProductToCartDto;
 		return this.cartService.addProductToCart(userId, productId, quantity);
 	}
 
 	@Delete('remove-product')
 	@HttpCode(HttpStatus.OK)
-	async removeProduct(@Body() removeProductFromCartDto: RemoveProductFromCartDto): Promise<Cart> {
-		const { userId, productId, quantity } = removeProductFromCartDto;
-		return this.cartService.removeProductFromCart(userId, productId, quantity);
+	async removeProduct(@Body() removeProductFromCartDto: RemoveProductFromCartDto): Promise<CartDto> {
+		const { userId, productId } = removeProductFromCartDto;
+		return this.cartService.removeProductFromCart(userId, productId);
 	}
 
 	@Put('update-product-quantity')
 	@HttpCode(HttpStatus.OK)
-	async updateProductQuantity(@Body() updateProductQuantityDto: UpdateProductQuantityDto): Promise<Cart> {
+	async updateProductQuantity(@Body() updateProductQuantityDto: UpdateProductQuantityDto): Promise<CartDto> {
 		const { userId, productId, quantity } = updateProductQuantityDto;
 		return this.cartService.updateProductQuantity(userId, productId, quantity);
 	}

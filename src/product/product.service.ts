@@ -46,7 +46,7 @@ export class ProductService {
 		product.price = createProductDto.price;
 		product.stockQuantity = createProductDto.stockQuantity;
 		product.expirationDate = createProductDto.expirationDate;
-		product.carts = [];
+		product.cartToProducts = [];
 		return product;
 	}
 }

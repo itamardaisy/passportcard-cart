@@ -6,8 +6,4 @@ export class RemoveProductFromCartDto {
 
 	@IsUUID()
 	productId: string;
-
-	@IsInt()
-	@IsPositive()
-	quantity: number;
 }

@@ -2,7 +2,7 @@ import { IsUUID, IsInt, IsPositive } from 'class-validator';
 
 export class UpdateProductQuantityDto {
 	@IsInt()
-	userId: string;
+	userId: number;
 
 	@IsUUID()
 	productId: string;
